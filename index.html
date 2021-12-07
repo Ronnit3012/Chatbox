@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Sockets</title>
+    <style>
+        #log {   /* Giving styling to chatbox */
+            width: 800px;
+            height: 400px;
+            margin: 0 auto;
+            border: 5px solid black;
+            border-radius: 7px;
+            overflow: auto;   /*  So that if messages are filled throughout the box we can scroll down the chatbox  */
+        }
+        #sendCntrls {    /* giving styling for sending message and button for send */
+            width: 250px;
+            margin: 0 auto;
+            /* text-align: center; */
+        }
+    </style>
+</head>
+<body>
+    <div id="log"></div>   <!-- too show what clients responded in the chatbox -->
+    <br><br>
+    <div id="sendCntrls">
+        <input type="text" placeholder="Your message here" id="text">   <!-- for sending messages -->
+
+        <button>Send</button>   <!-- to send message -->
+    </div>
+
+    <script>
+        var name = prompt('What is your name fella?');   // this will ask for the name before entering into the chatbox so that wh=hen u interact ppl shld know u are
+
+        var sock = new WebSocket("ws://localhost:5500");     // we run our websocket at our local host 5500
+
+        var log = document.getElementById('log');
+
+        sock.onopen = function () {   // #1    to store the name of the client
+            sock.send(JSON.stringify({  // we convert the name into a string and send it to the server so as to showcase the other servers who sent the message
+                type: "name",
+                data: name
+            }));
+        }
+
+        sock.onmessage = function(event) {   //#7
+            console.log(event);     // this will give all the details of the messaging event happened in the console
+            var json = JSON.parse(event.data);    // we parse thje stringified data
+        
+            log.innerHTML += json.name +": "+ json.data + "<br>";   // this will show to other ppl what u typed in the chatbox with ur name
+        };
+
+        document.querySelector('button').onclick = function() {   // #2
+            var text = document.getElementById('text').value;   // this takes the input from 
+            // sock.send(text);
+
+            sock.send(JSON.stringify({  // this will send this to the server in a string form of an object to the other clients on the same server
+                type: "message",
+                data: text
+            }));
+            log.innerHTML += "You: " + text + "<br>";   // this will show in the chatbox what u wrote and the message
+
+            document.getElementById('text').value = "";   // to remove the previous contents from the chatbox after clicking the button send
+        }
+        
+    </script>
+
+    <!-- <script src="app.js"></script> -->
+</body>
+</html>
